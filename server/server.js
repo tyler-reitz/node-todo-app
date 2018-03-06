@@ -1,3 +1,6 @@
+require('../config')
+
+const _ = require('lodash')
 const express = require('express')
 const bodyParser = require('body-parser')
 const { ObjectID } = require('mongodb')
@@ -7,7 +10,7 @@ const { Users } = require('../models/users')
 const { Todos } = require('../models/todos')
 
 const app = express()
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT
 
 app.use(bodyParser.json())
 
@@ -56,6 +59,31 @@ app.delete('/todos/:id', (req, res) => {
 
   Todos
     .findByIdAndRemove(id)
+    .then(todo => {
+      if (!todo) return res.status(400).send()
+      res.send({ todo })
+    })
+    .catch(e => res.status(400).send())
+})
+
+app.patch('/todos/:id', (req, res) => {
+  const { id } = req.params
+  let { text, completed } = req.body
+  let completedAt
+
+  if (!ObjectID.isValid(id)) {
+    return res.status(400).send()
+  }
+
+  if (_.isBoolean(completed) && completed) {
+    completedAt = new Date().getTime()
+  } else {
+    completed = false
+    completedAt = null
+  }
+
+  Todos
+    .findByIdAndUpdate(id, { $set: { text, completed, completedAt }}, { new: true })
     .then(todo => {
       if (!todo) return res.status(400).send()
       res.send({ todo })

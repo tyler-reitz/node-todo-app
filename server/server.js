@@ -1,13 +1,17 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 
-const { mongoose } = require('./db/mongoose')
-const { Users } = require('./models/users')
-const { Todos } = require('./models/todos')
+const { mongoose } = require('../db/mongoose')
+const { Users } = require('../models/users')
+const { Todos } = require('../models/todos')
 
 const app = express()
 
 app.use(bodyParser.json())
+
+app.get('/ping', (req, res) => {
+  res.send('pong')
+})
 
 app.post('/todos', (req, res) => {
   const todo = new Todos({
@@ -20,3 +24,7 @@ app.post('/todos', (req, res) => {
 })
 
 app.listen(3000, () => console.log('Started on 3000'))
+
+module.exports = {
+  app
+}

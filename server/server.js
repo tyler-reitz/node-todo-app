@@ -9,6 +9,8 @@ const { mongoose } = require('../db/mongoose')
 const { Users } = require('../models/users')
 const { Todos } = require('../models/todos')
 
+const userRoutes = require('../routes/users')
+
 const app = express()
 const PORT = process.env.PORT
 
@@ -90,6 +92,9 @@ app.patch('/todos/:id', (req, res) => {
     })
     .catch(e => res.status(400).send())
 })
+
+// POST users
+app.use('/users', userRoutes)
 
 app.listen(PORT, () => console.log(`Started on ${PORT}`))
 

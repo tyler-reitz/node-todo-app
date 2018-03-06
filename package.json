@@ -7,12 +7,16 @@
     "test": "mocha test/**/*.test.js",
     "test:watch": "nodemon --exec 'npm test'"
   },
+  "engines": {
+    "node": "8.9.4"
+  },
   "keywords": [],
   "author": "Tyler Reitz <tdreitz@gmail.com>",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.18.2",
     "express": "^4.16.2",
+    "mongodb": "^2.2.33",
     "mongoose": "^4.13.2"
   },
   "devDependencies": {

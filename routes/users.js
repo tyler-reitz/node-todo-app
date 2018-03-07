@@ -1,8 +1,8 @@
 const express = require('express')
 const router = express.Router()
-const { authenticate } = require('../middleware/authenticate')
 
-const { Users } = require('../models/users')
+const { Users } = require("../models/users")
+const { authenticate } = require('../middleware/authenticate')
 
 router.post('/', (req, res) => {
   const { email, password } = req.body

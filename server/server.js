@@ -9,6 +9,8 @@ const { mongoose } = require('../db/mongoose')
 const { Users } = require('../models/users')
 const { Todos } = require('../models/todos')
 
+const { authenticate } = require('../middleware/authenticate')
+
 const userRoutes = require('../routes/users')
 
 const app = express()
@@ -20,9 +22,10 @@ app.get('/ping', (req, res) => {
   res.send('pong')
 })
 
-app.post('/todos', (req, res) => {
+app.post('/todos', authenticate, (req, res) => {
   const todo = new Todos({
-    text: req.body.text
+    text: req.body.text,
+    _creator: req.user._id
   })
 
   todo.save()
@@ -30,13 +33,15 @@ app.post('/todos', (req, res) => {
     .catch(e => res.status(400).send(e))
 })
 
-app.get('/todos', (req, res) => {
-  Todos.find({})
+app.get('/todos', authenticate, (req, res) => {
+  Todos.find({
+    _creator: req.user._id
+  })
     .then(todos => res.send({ todos }))
     .catch(e => res.status(400).send(e))
 })
 
-app.get('/todos/:id', (req, res) => {
+app.get('/todos/:id', authenticate, (req, res) => {
   const { id } = req.params
 
   if (!ObjectID.isValid(id)) {
@@ -44,7 +49,10 @@ app.get('/todos/:id', (req, res) => {
   }
 
   Todos
-    .findById(id)
+    .findById({
+      _id: id,
+      _creator: req.user._id
+    })
     .then(todo => {
       if (!todo) return res.status(400).send()
       res.send({ todo })
@@ -52,7 +60,7 @@ app.get('/todos/:id', (req, res) => {
     .catch(e => res.status(400).send({}))
 })
 
-app.delete('/todos/:id', (req, res) => {
+app.delete('/todos/:id', authenticate, (req, res) => {
   const { id } = req.params
 
   if (!ObjectID.isValid(id)) {
@@ -60,15 +68,20 @@ app.delete('/todos/:id', (req, res) => {
   }
 
   Todos
-    .findByIdAndRemove(id)
+    .findOneAndRemove({
+      _id: id,
+      _creator: req.user._id
+    })
     .then(todo => {
-      if (!todo) return res.status(400).send()
+      if (!todo) {
+        return res.status(400).send()
+      }
       res.send({ todo })
     })
     .catch(e => res.status(400).send())
 })
 
-app.patch('/todos/:id', (req, res) => {
+app.patch('/todos/:id', authenticate, (req, res) => {
   const { id } = req.params
   let { text, completed } = req.body
   let completedAt
@@ -85,7 +98,11 @@ app.patch('/todos/:id', (req, res) => {
   }
 
   Todos
-    .findByIdAndUpdate(id, { $set: { text, completed, completedAt }}, { new: true })
+    .findOneAndUpdate(
+      { _id: id, _creator: req.user._id },
+      { $set: { text, completed, completedAt } },
+      { new: true }
+    )
     .then(todo => {
       if (!todo) return res.status(400).send()
       res.send({ todo })

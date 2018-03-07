@@ -53,6 +53,28 @@ UserSchema.pre('save', function (next) {
   }
 })
 
+UserSchema.statics.findByCredentials = function (email, password) {
+  const User = this
+
+  return User
+    .findOne({ email })
+    .then(user => {
+      if (!user) {
+        return Promise.reject()
+      }
+
+      return new Promise((resolve, reject) => {
+        bycrpt.compare(password, user.password, (err, res) => {
+          if (!res) {
+            reject(user)
+          }
+
+          resolve(user)
+        })
+      })
+    })
+}
+
 UserSchema.methods.toJSON = function () {
   const user = this
   const { _id, email } = user.toObject()

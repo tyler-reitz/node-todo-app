@@ -33,4 +33,10 @@ router.post('/login', (req, res) => {
     .catch(e => res.status(400).send())
 })
 
+router.delete('/me/token', authenticate, (req, res) => {
+  req.user.removeToken(req.token)
+    .then(() => res.status(200).send())
+    .catch(() => res.status(400).send())
+})
+
 module.exports = router

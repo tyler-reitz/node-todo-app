@@ -75,6 +75,24 @@ UserSchema.statics.findByCredentials = function (email, password) {
     })
 }
 
+UserSchema.statics.findByToken = function(token) {
+  const Users = this
+  let decoded
+
+  try {
+    decoded = jwt.verify(token, "abc123")
+  } catch (e) {
+    return Promise.reject()
+  }
+
+  return Users.findOne({
+    _id: decoded._id,
+    "tokens.token": token,
+    "tokens.access": "auth"
+  })
+}
+
+
 UserSchema.methods.toJSON = function () {
   const user = this
   const { _id, email } = user.toObject()
@@ -93,20 +111,10 @@ UserSchema.methods.generateAuthToken = function () {
     .then(() => token)
 }
 
-UserSchema.statics.findByToken = function (token) {
-  const Users = this
-  let decoded
-  
-  try {
-    decoded = jwt.verify(token, 'abc123')
-  } catch (e) {
-    return Promise.reject()
-  }
+UserSchema.methods.removeToken = function (token) {
+  const User = this
 
-  return Users.findOne({
-    '_id': decoded._id,
-    'tokens.token': token,
-    'tokens.access': 'auth'
+  return User.update({ $pull: { tokens: { token } }
   })
 }
 
